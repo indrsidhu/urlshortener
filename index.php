@@ -1,20 +1,11 @@
 <?php
 require_once('config.php');
-require_once('shortner.class.php');
 
-//if(isset($_POST) && isset($_POST['long_url'])){
-
-	
-
-
-	die();
-
-	
-
-	
-	
-	
-//}
+if(isset($_POST) && isset($_POST['long_url'])){
+	require_once('shortner.class.php');
+	$shortner = new shortner;
+	$shortner->create($_POST);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,8 +42,24 @@ require_once('shortner.class.php');
 			</form>
 		</div>
 	</div>
-  
-
+	
+	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel">URL Shortner service</h4>
+		  </div>
+		  <div class="modal-body">
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+		  </div>
+		</div>
+	  </div>
+	</div>	
+ 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="assets/js/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -63,11 +70,22 @@ require_once('shortner.class.php');
 			event.preventDefault();
 			long_url = jQuery("#long_url").val();
 			jQuery.ajax({
-			  type: 'post',
-			  data: {long_url:long_url},
-			  success: function (data, status) {
-			  },
+				response:'JSON',	
+				type: 'post',
+				data: {long_url:long_url},
+				success: function (response, status) {
+					if(response.type=="success"){
+						html = "";
+						html += "<textarea class=\"form-control\"><?php echo SITE_DOMAIN; ?>/"+response.short_url+"</textarea>";
+					} else{
+						html = "";
+						html += "<div class=\"alert alert-danger\">"+response.message+"</div>";
+					}
+					jQuery("#myModal .modal-body").html(html);
+					jQuery('#myModal').modal('show');
+				},
 			  error: function (xhr, desc, err) {
+				alert("Error: Unable to process this request, please try after some time");
 			  }
 			});
 		});
