@@ -1,28 +1,18 @@
 <?php
+/*
+	Project : URL Shortner service
+	Last modification date : 11 Sep 2015
+*/
 class shortner{
 	private $db = "";
-	private $shortCodeLimit = 6; //6 Chracter
+	private $shortCodeLimit = 6; //6 Character
 	
+	// Initilize Database connection
 	function __construct(){
 		$this->db = $this->getDB();
 	}
 	
-	function find($short_url){
-		$response = new stdclass;
-		$response->type 	= '';
-		$response->message 	= '';
-		
-		if($url = $this->findLongUrl($short_url)){
-			$response->type 	= 'success';
-			$response->long_url=$url;
-		} else{
-			$response->type 	= 'error';
-			$response->message	= 'Short version of this url not exist.';
-		}
-		$this->printResponse($response);
-		exit;
-	}
-	
+	/* Find Long URL by arguing short URL */
 	public function findLongUrl($short_url){
 		$db = $this->db;
 		$sql = "SELECT t.long_url FROM urlshortner as t WHERE t.short_url=:x";
@@ -43,6 +33,7 @@ class shortner{
 		}
 	}
 	
+	/* Find short URL by arguing long URL */
 	private function findShortUrl($long_url){
 		$long_url_hash = md5($long_url);
 		$db = $this->db;
@@ -60,6 +51,7 @@ class shortner{
 		}
 	}	
 	
+	/* Create short Url, First check if already created then return existing short url */
 	public function create($arg){
 	
 		$long_url = $arg['long_url'];
@@ -106,6 +98,7 @@ class shortner{
 		exit;
 	}
 	
+	/* Generate Short url, and validate if exist regenerate code */
 	private function generateShortUrl(){
 		do {
 		  $shortCode = $this->generate_random_letters($this->shortCodeLimit);
@@ -114,11 +107,13 @@ class shortner{
 		return $shortCode;
 	}
 	
+	/* Print output to json format, to communicte with Jquery Ajax */
 	private function printResponse($response){
 		header('Content-Type: application/json');
 		echo json_encode($response);		
 	}
 	
+	//Coonect to database
 	private function getDB() {
 		if(!isset($this->getdb)){
 			$dbhost = DB_HOST;
@@ -132,8 +127,7 @@ class shortner{
 		return $getdb;
 	}
 	
-	
-
+	/* Generate random characters */
 	private function generate_random_letters($length) {
 	  $random = '';
 	  for ($i = 0; $i < $length; $i++) {
@@ -142,6 +136,7 @@ class shortner{
 	  return $random;
 	}
 	
+	/* URL validation */
 	private function validateUrl($url){
 		if(in_array(parse_url($url, PHP_URL_SCHEME),array('http','https'))){
 			if (filter_var($url, FILTER_VALIDATE_URL) !== false) {
