@@ -1,5 +1,17 @@
 <?php
+$notfound = false;
 require_once('config.php');
+if(isset($_GET) && (isset($_GET['r'])) && ($_GET['r']!="")){
+	require_once('shortner.class.php');
+	$shortner = new shortner;
+	if($long_url = $shortner->findLongUrl($_GET['r'])){
+		header("HTTP/1.1 301 Moved Permanently");
+		header("Location: ".$long_url."");
+		exit;
+	} else{
+		$notfound = true;
+	}
+}
 
 if(isset($_POST) && isset($_POST['long_url'])){
 	require_once('shortner.class.php');
@@ -31,14 +43,22 @@ if(isset($_POST) && isset($_POST['long_url'])){
   
 	<div class="container">
 		<div id="urlshortner">
+		
+			<?php if($notfound): ?>
+			<div class="alert alert-danger">
+			<h2>Not found</h2>
+			Sorry your requested page not found, please check.
+			</div>
+			<?php endif; ?>
+		
 			<h1>URL Shortner service</h1>
 			<form>
 				<div class="form-group">
 					<label for="long_url">URL</label>
 					<input name="long_url" id="long_url" type="url" class="form-control" placeholder="Long url">
-					<p class="help-block">Insert long url to make it short.</p>
+					<p class="help-block">Insert long and ugly url, w'll make it short & smart.</p>
 				</div>
-				<button id="getShortUrl" type="submit" class="btn btn-primary">GET Short URL</button>
+				<button id="getShortUrl" type="submit" data-loading-text="Processing..." class="btn btn-primary">GET Short URL</button>
 			</form>
 		</div>
 	</div>
@@ -68,6 +88,10 @@ if(isset($_POST) && isset($_POST['long_url'])){
 	<script type="text/javascript">
 		jQuery("#getShortUrl").on("click",function(event){
 			event.preventDefault();
+			
+			var $btn = $(this);
+			$btn.button('loading');
+	
 			long_url = jQuery("#long_url").val();
 			jQuery.ajax({
 				response:'JSON',	
@@ -83,8 +107,10 @@ if(isset($_POST) && isset($_POST['long_url'])){
 					}
 					jQuery("#myModal .modal-body").html(html);
 					jQuery('#myModal').modal('show');
+					$btn.button('reset');
 				},
 			  error: function (xhr, desc, err) {
+				$btn.button('reset');
 				alert("Error: Unable to process this request, please try after some time");
 			  }
 			});

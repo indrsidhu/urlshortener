@@ -8,18 +8,22 @@ class shortner{
 	}
 	
 	function find($short_url){
+		$response = new stdclass;
+		$response->type 	= '';
+		$response->message 	= '';
+		
 		if($url = $this->findLongUrl($short_url)){
 			$response->type 	= 'success';
 			$response->long_url=$url;
-			$this->printResponse($response);
-			exit;
 		} else{
 			$response->type 	= 'error';
 			$response->message	= 'Short version of this url not exist.';
-		}		
+		}
+		$this->printResponse($response);
+		exit;
 	}
 	
-	private function findLongUrl($short_url){
+	public function findLongUrl($short_url){
 		$db = $this->db;
 		$sql = "SELECT t.long_url FROM urlshortner as t WHERE t.short_url=:x";
 		$sql = $db->prepare($sql);
